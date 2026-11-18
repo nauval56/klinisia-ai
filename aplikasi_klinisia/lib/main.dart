@@ -369,14 +369,16 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
     });
   }
 
-  /// Panduan format CSV (tombol di baris status file).
+  /// Panduan format file (tombol di baris status file).
+  /// Ditampilkan SEBELUM file dipilih, jadi disebutkan semua format
+  /// yang didukung (.csv/.tsv/.xlsx) — bukan hanya CSV.
   void _tampilkanPanduanCsv() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Format CSV: satu kolom teks ulasan (content / review / ulasan). '
-          'Kolom score atau label (opsional) dipakai agar prediksi bisa '
-          'dibandingkan dengan label acuan.',
+          'Format file: .CSV, .TSV, atau .XLSX — satu kolom teks ulasan '
+          '(content / review / ulasan). Kolom score atau label (opsional) '
+          'dipakai agar prediksi bisa dibandingkan dengan label acuan.',
           style: GoogleFonts.inter(fontSize: 13),
         ),
         behavior: SnackBarBehavior.floating,
@@ -1377,7 +1379,7 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
                           Flexible(
                             child: Text(
                               _lampiran == null
-                                  ? 'Tekan + untuk lampirkan dataset (.CSV / .XLSX), atau tulis teks — lalu ↑ untuk menganalisis.'
+                                  ? 'Tekan + untuk lampirkan dataset (.CSV / .TSV / .XLSX), atau tulis teks — lalu ↑ untuk menganalisis.'
                                   : 'Tekan ↑ untuk menganalisis seluruh baris file terlampir.',
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -2177,11 +2179,21 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Tombol unduh — DI ATAS seluruh laporan (sesuai desain).
+        // Format unduhan MENGIKUTI file yang diunggah user: unggah .xlsx
+        // -> tombol & file unduhan .XLSX, selain itu -> .CSV.
         _tombolEkspor(
-          label: 'Unduh Hasil Analisis (.CSV)',
-          url: ApiService.csvUploadReportUrl,
-          fallback: 'hasil_unggahan.csv',
-          icon: Icons.table_chart_outlined,
+          label: _ekstensiFile(namaFile) == 'xlsx'
+              ? 'Unduh Hasil Analisis (.XLSX)'
+              : 'Unduh Hasil Analisis (.CSV)',
+          url: ApiService.csvUploadReportUrl(
+            format: _ekstensiFile(namaFile) == 'xlsx' ? 'xlsx' : 'csv',
+          ),
+          fallback: _ekstensiFile(namaFile) == 'xlsx'
+              ? 'hasil_unggahan.xlsx'
+              : 'hasil_unggahan.csv',
+          icon: _ekstensiFile(namaFile) == 'xlsx'
+              ? Icons.grid_on_outlined
+              : Icons.table_chart_outlined,
         ),
         const SizedBox(height: 16),
 
@@ -2384,7 +2396,8 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
         ),
         const SizedBox(height: 12),
 
-        // Footer Info Banner — panduan format CSV (selalu tampil).
+        // Footer Info Banner — panduan format file yang diunggah user
+        // (ikuti ekstensi file: .csv/.tsv/.xlsx, jangan hardcode "CSV").
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -2397,9 +2410,10 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Format CSV: satu kolom teks ulasan (content / review / '
-                  'ulasan). Kolom score atau label opsional agar prediksi '
-                  'bisa dibandingkan dengan label acuan.',
+                  'Format .${_ekstensiFile(namaFile).toUpperCase()}: satu kolom '
+                  'teks ulasan (content / review / ulasan). Kolom score atau '
+                  'label opsional agar prediksi bisa dibandingkan dengan '
+                  'label acuan.',
                   style: GoogleFonts.inter(fontSize: 13, color: _textVariant),
                 ),
               ),
@@ -2515,6 +2529,13 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
     if (v == null) return '—';
     final x = dariNolSatu ? v * 100 : v;
     return '${x.toStringAsFixed(1)}%';
+  }
+
+  /// Ekstensi file huruf kecil ('' bila tanpa titik) — dipakai untuk
+  /// menyesuaikan format unduhan hasil analisis (.xlsx vs .csv).
+  String _ekstensiFile(String nama) {
+    final i = nama.lastIndexOf('.');
+    return i < 0 ? '' : nama.substring(i + 1).toLowerCase();
   }
 
   Widget _datasetStatCard({
@@ -2698,8 +2719,8 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
           ),
           const SizedBox(height: 4),
           Text(
-            'Unggah dataset CSV — distribusi Positif/Negatif dari file '
-            'Anda akan tampil di sini.',
+            'Unggah file dataset (.CSV / .TSV / .XLSX) — distribusi '
+            'Positif/Negatif dari file Anda akan tampil di sini.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
@@ -3122,7 +3143,7 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
             children: const [
               TextSpan(
                 text:
-                    'Jalankan backend Klinisia dan unggah file CSV — ringkasan '
+                    'Unggah file dataset (.CSV / .TSV / .XLSX) — ringkasan '
                     'klasifikasi, validasi label, serta kata pendorong model '
                     'akan muncul otomatis di sini.',
               ),
@@ -3529,7 +3550,7 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
           ),
           const SizedBox(height: 4),
           Text(
-            'Hak Cipta © 2025 Klinisia AI. All rights reserved.',
+            'Hak Cipta © 2026 Klinisia AI. All rights reserved.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 11,

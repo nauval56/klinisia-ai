@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/download_service.dart';
 import '../widgets/widgets_bersama.dart';
+
 /// Statistik dataset — hanya menampilkan file unggahan user
 /// (tanpa dataset bawaan apa pun).
 class _DatasetSection extends StatelessWidget {
@@ -60,33 +61,49 @@ class _DatasetSection extends StatelessWidget {
     // Jumlah baris berlabel = support baris Weighted avg (fallback agreement).
     final labeledRows =
         (weighted?['support'] as num?)?.toInt() ??
-            (agreement?['labeled_rows'] as num?)?.toInt();
+        (agreement?['labeled_rows'] as num?)?.toInt();
 
     return Column(
       children: [
-        const SectionHeading('Statistik Dataset',
-            icon: Icons.upload_file_outlined),
+        const SectionHeading(
+          'Statistik Dataset',
+          icon: Icons.upload_file_outlined,
+        ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          decoration:
-              BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Row(
             children: [
-              const Icon(Icons.insert_drive_file_outlined, size: 9, color: navy),
+              const Icon(
+                Icons.insert_drive_file_outlined,
+                size: 9,
+                color: navy,
+              ),
               const SizedBox(width: 5),
               Expanded(
-                child: Text('${up['filename'] ?? 'unggahan.csv'}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 6.5, color: Color(0xFF4B5563))),
+                child: Text(
+                  '${up['filename'] ?? 'unggahan.csv'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 6.5,
+                    color: Color(0xFF4B5563),
+                  ),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                 decoration: BoxDecoration(
-                    color: const Color(0xFFE5FBF2),
-                    borderRadius: BorderRadius.circular(10)),
-                child: Text('${_fmt(rows)} Baris',
-                    style: const TextStyle(fontSize: 6, color: Color(0xFF008B65))),
+                  color: const Color(0xFFE5FBF2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${_fmt(rows)} Baris',
+                  style: const TextStyle(fontSize: 6, color: Color(0xFF008B65)),
+                ),
               ),
             ],
           ),
@@ -95,49 +112,57 @@ class _DatasetSection extends StatelessWidget {
         Row(
           children: [
             Expanded(
-                child: _MetricCard(
-                    title: 'Total Baris Diunggah',
-                    value: _fmt(rows),
-                    sub: 'kolom teks: ${up['column_used'] ?? '-'}',
-                    color: navy,
-                    subBg: paleBlue)),
+              child: _MetricCard(
+                title: 'Total Baris Diunggah',
+                value: _fmt(rows),
+                sub: 'kolom teks: ${up['column_used'] ?? '-'}',
+                color: navy,
+                subBg: paleBlue,
+              ),
+            ),
             const SizedBox(width: 6),
             Expanded(
-                child: _MetricCard(
-                    title: 'Sentimen Positif',
-                    value: _fmt(positif),
-                    sub: '$ratioPos% Proporsi',
-                    color: const Color(0xFF00875F),
-                    subBg: const Color(0xFFE7FBF3))),
+              child: _MetricCard(
+                title: 'Sentimen Positif',
+                value: _fmt(positif),
+                sub: '$ratioPos% Proporsi',
+                color: const Color(0xFF00875F),
+                subBg: const Color(0xFFE7FBF3),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
         Row(
           children: [
             Expanded(
-                child: _MetricCard(
-                    title: 'Sentimen Negatif',
-                    value: _fmt(negatif),
-                    sub: '$ratioNeg% Proporsi',
-                    color: red,
-                    subBg: const Color(0xFFFFE9E9))),
+              child: _MetricCard(
+                title: 'Sentimen Negatif',
+                value: _fmt(negatif),
+                sub: '$ratioNeg% Proporsi',
+                color: red,
+                subBg: const Color(0xFFFFE9E9),
+              ),
+            ),
             const SizedBox(width: 6),
             // Kartu F1 Score — F1 weighted avg DARI FILE UNGGAHAN USER
             // (upload_report); file tanpa label jatuh ke "Rata-rata
             // Confidence".
             Expanded(
-                child: _MetricCard(
-                    title: f1 != null ? 'F1 Score' : 'Rata-rata Confidence',
-                    value: f1 != null
-                        ? '${(f1 * 100).toStringAsFixed(1)}%'
-                        : avg == null
-                            ? '-'
-                            : '${(avg * 100).toStringAsFixed(1)}%',
-                    sub: f1 != null
-                        ? '${labeledRows ?? '-'} baris berlabel'
-                        : 'tanpa kolom label',
-                    color: navy,
-                    subBg: paleBlue)),
+              child: _MetricCard(
+                title: f1 != null ? 'F1 Score' : 'Rata-rata Confidence',
+                value: f1 != null
+                    ? '${(f1 * 100).toStringAsFixed(1)}%'
+                    : avg == null
+                    ? '-'
+                    : '${(avg * 100).toStringAsFixed(1)}%',
+                sub: f1 != null
+                    ? '${labeledRows ?? '-'} baris berlabel'
+                    : 'tanpa kolom label',
+                color: navy,
+                subBg: paleBlue,
+              ),
+            ),
           ],
         ),
         // Peringatan bila analisis berhenti pada batas waktu 5 menit:
@@ -156,15 +181,21 @@ class _DatasetSection extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.schedule_outlined,
-                    size: 9, color: Color(0xFFB45309)),
+                const Icon(
+                  Icons.schedule_outlined,
+                  size: 9,
+                  color: Color(0xFFB45309),
+                ),
                 const SizedBox(width: 5),
                 Expanded(
                   child: Text(
                     up['warning'] as String? ??
                         'Analisis dihentikan pada batas waktu.',
                     style: const TextStyle(
-                        fontSize: 6, height: 1.4, color: Color(0xFFB45309)),
+                      fontSize: 6,
+                      height: 1.4,
+                      color: Color(0xFFB45309),
+                    ),
                   ),
                 ),
               ],
@@ -179,27 +210,47 @@ class _DatasetSection extends StatelessWidget {
 class _MetricCard extends StatelessWidget {
   final String title, value, sub;
   final Color color, subBg;
-  const _MetricCard({required this.title, required this.value, required this.sub, required this.color, required this.subBg});
+  const _MetricCard({
+    required this.title,
+    required this.value,
+    required this.sub,
+    required this.color,
+    required this.subBg,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(fontSize: 6.5, color: muted)),
-            const SizedBox(height: 5),
-            Text(value, style: TextStyle(fontSize: 12, height: 1, color: color, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-              decoration: BoxDecoration(color: subBg, borderRadius: BorderRadius.circular(10)),
-              child: Text(sub, style: TextStyle(fontSize: 5.7, color: color)),
-            ),
-          ],
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 6.5, color: muted)),
+        const SizedBox(height: 5),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12,
+            height: 1,
+            color: color,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-      );
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+          decoration: BoxDecoration(
+            color: subBg,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(sub, style: TextStyle(fontSize: 5.7, color: color)),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Distribusi polaritas — dihitung dari ringkasan file unggahan user
@@ -223,13 +274,25 @@ class _PolarityCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(9),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Expanded(child: Text('Distribusi Polaritas', style: TextStyle(fontSize: 8.5, color: ink, fontWeight: FontWeight.w600))),
+              const Expanded(
+                child: Text(
+                  'Distribusi Polaritas',
+                  style: TextStyle(
+                    fontSize: 8.5,
+                    color: ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
               TinyBadge(total > 0 ? 'N=$total' : 'N=-'),
             ],
           ),
@@ -242,14 +305,27 @@ class _PolarityCard extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   CustomPaint(
-                      size: const Size(72, 72),
-                      painter: _DonutPainter(posFraction: posFraction, negFraction: negFraction)),
+                    size: const Size(72, 72),
+                    painter: _DonutPainter(
+                      posFraction: posFraction,
+                      negFraction: negFraction,
+                    ),
+                  ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(total > 0 ? '$total' : '-',
-                          style: const TextStyle(fontSize: 11, color: ink, fontWeight: FontWeight.w700)),
-                      const Text('TOTAL DATA', style: TextStyle(fontSize: 5.5, color: muted)),
+                      Text(
+                        total > 0 ? '$total' : '-',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: ink,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Text(
+                        'TOTAL DATA',
+                        style: TextStyle(fontSize: 5.5, color: muted),
+                      ),
                     ],
                   ),
                 ],
@@ -262,16 +338,20 @@ class _PolarityCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                  child: _LegendBox(
-                      color: green,
-                      title: 'Positif: ${positif.toInt()}',
-                      value: '$ratioPos%')),
+                child: _LegendBox(
+                  color: green,
+                  title: 'Positif: ${positif.toInt()}',
+                  value: '$ratioPos%',
+                ),
+              ),
               const SizedBox(width: 6),
               Expanded(
-                  child: _LegendBox(
-                      color: red,
-                      title: 'Negatif: ${negatif.toInt()}',
-                      value: '$ratioNeg%')),
+                child: _LegendBox(
+                  color: red,
+                  title: 'Negatif: ${negatif.toInt()}',
+                  value: '$ratioNeg%',
+                ),
+              ),
             ],
           ),
         ],
@@ -294,10 +374,21 @@ class _DonutPainter extends CustomPainter {
       ..strokeWidth = 8
       ..strokeCap = StrokeCap.butt;
     p.color = red;
-    canvas.drawArc(rect.deflate(4), -1.5708, 3.14159 * 2 * negFraction, false, p);
+    canvas.drawArc(
+      rect.deflate(4),
+      -1.5708,
+      3.14159 * 2 * negFraction,
+      false,
+      p,
+    );
     p.color = green;
-    canvas.drawArc(rect.deflate(4), -1.5708 + 3.14159 * 2 * negFraction,
-        3.14159 * 2 * posFraction, false, p);
+    canvas.drawArc(
+      rect.deflate(4),
+      -1.5708 + 3.14159 * 2 * negFraction,
+      3.14159 * 2 * posFraction,
+      false,
+      p,
+    );
   }
 
   @override
@@ -309,32 +400,54 @@ class _DonutPainter extends CustomPainter {
 class _LegendBox extends StatelessWidget {
   final Color color;
   final String title, value;
-  const _LegendBox({required this.color, required this.title, required this.value});
+  const _LegendBox({
+    required this.color,
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: color == green ? const Color(0xFFEAFBF4) : const Color(0xFFFFEEEE),
-          borderRadius: BorderRadius.circular(7),
+    padding: const EdgeInsets.all(6),
+    decoration: BoxDecoration(
+      color: color == green ? const Color(0xFFEAFBF4) : const Color(0xFFFFEEEE),
+      borderRadius: BorderRadius.circular(7),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 5,
+          height: 5,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        child: Row(
-          children: [
-            Container(width: 5, height: 5, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyle(fontSize: 5.7, color: color, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 3),
-                  Text(value, style: TextStyle(fontSize: 6.5, color: color, fontWeight: FontWeight.w700)),
-                ],
+        const SizedBox(width: 4),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 5.7,
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 3),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 6.5,
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
-      );
+      ],
+    ),
+  );
 }
 
 class _WeightCard extends StatefulWidget {
@@ -351,11 +464,13 @@ class _WeightCardState extends State<_WeightCard> {
   @override
   void initState() {
     super.initState();
-    ApiService.weights(limit: 6).then((w) {
-      if (mounted) setState(() => _weights = w);
-    }).catchError((e) {
-      if (mounted) setState(() => _error = e.toString());
-    });
+    ApiService.weights(limit: 6)
+        .then((w) {
+          if (mounted) setState(() => _weights = w);
+        })
+        .catchError((e) {
+          if (mounted) setState(() => _error = e.toString());
+        });
   }
 
   List<Map<String, dynamic>> _list(dynamic key) =>
@@ -374,46 +489,80 @@ class _WeightCardState extends State<_WeightCard> {
 
     return Container(
       padding: const EdgeInsets.all(9),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Expanded(child: Text('Bobot Fitur SVM (w)', style: TextStyle(fontSize: 8.5, color: ink, fontWeight: FontWeight.w600))),
-              TinyBadge(_error != null
-                  ? 'Offline'
-                  : _weights == null
-                      ? 'Memuat...'
-                      : 'TF-IDF · ${_weights!['feature_count'] ?? '-'} fitur'),
+              const Expanded(
+                child: Text(
+                  'Bobot Fitur SVM (w)',
+                  style: TextStyle(
+                    fontSize: 8.5,
+                    color: ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TinyBadge(
+                _error != null
+                    ? 'Offline'
+                    : _weights == null
+                    ? 'Memuat...'
+                    : 'TF-IDF · ${_weights!['feature_count'] ?? '-'} fitur',
+              ),
             ],
           ),
           const SizedBox(height: 12),
           if (_error != null)
-            Text('Gagal memuat bobot: $_error',
-                style: const TextStyle(fontSize: 6.5, color: red))
+            Text(
+              'Gagal memuat bobot: $_error',
+              style: const TextStyle(fontSize: 6.5, color: red),
+            )
           else if (_weights == null)
             const LinearProgressIndicator(minHeight: 2, color: navy)
           else ...[
-            const Text('↗ PREDIKTOR POSITIF (+)', style: TextStyle(fontSize: 6, color: green, fontWeight: FontWeight.w700)),
+            const Text(
+              '↗ PREDIKTOR POSITIF (+)',
+              style: TextStyle(
+                fontSize: 6,
+                color: green,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 7),
             for (final w in positive) ...[
               WeightRow(
                 word: '“${w['word']}”',
                 value: '+${(w['weight'] as num).toStringAsFixed(2)}',
-                progress: maxAbs > 0 ? ((w['abs_weight'] as num) / maxAbs).clamp(0, 1).toDouble() : 0,
+                progress: maxAbs > 0
+                    ? ((w['abs_weight'] as num) / maxAbs).clamp(0, 1).toDouble()
+                    : 0,
                 color: green,
               ),
               const SizedBox(height: 7),
             ],
             const SizedBox(height: 5),
-            const Text('↘ PREDIKTOR NEGATIF (-)', style: TextStyle(fontSize: 6, color: red, fontWeight: FontWeight.w700)),
+            const Text(
+              '↘ PREDIKTOR NEGATIF (-)',
+              style: TextStyle(
+                fontSize: 6,
+                color: red,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 7),
             for (final w in negative) ...[
               WeightRow(
                 word: '“${w['word']}”',
                 value: (w['weight'] as num).toStringAsFixed(2),
-                progress: maxAbs > 0 ? ((w['abs_weight'] as num) / maxAbs).clamp(0, 1).toDouble() : 0,
+                progress: maxAbs > 0
+                    ? ((w['abs_weight'] as num) / maxAbs).clamp(0, 1).toDouble()
+                    : 0,
                 color: red,
               ),
               const SizedBox(height: 7),
@@ -447,8 +596,11 @@ class _ReportTable extends StatelessWidget {
   static String _supp(dynamic v) => v is num ? v.toInt().toString() : '-';
 
   /// Gaya teks kepala kolom (biru navy di atas latar biru muda).
-  static const TextStyle _headStyle =
-      TextStyle(fontSize: 6, color: navy, fontWeight: FontWeight.w700);
+  static const TextStyle _headStyle = TextStyle(
+    fontSize: 6,
+    color: navy,
+    fontWeight: FontWeight.w700,
+  );
 
   /// Satu baris tabel: kepala kolom / baris kelas / baris ringkasan.
   static Widget _row(
@@ -466,8 +618,8 @@ class _ReportTable extends StatelessWidget {
     final Color labelColor = label == 'Negatif'
         ? red
         : label == 'Positif'
-            ? green
-            : ink;
+        ? green
+        : ink;
     // Titik warna hanya untuk baris kelas sentimen.
     final bool isSentiment = label == 'Negatif' || label == 'Positif';
 
@@ -479,10 +631,10 @@ class _ReportTable extends StatelessWidget {
         color: header
             ? paleBlue
             : summary
-                ? null
-                : alt
-                    ? const Color(0xFFF8FAFE)
-                    : Colors.white,
+            ? null
+            : alt
+            ? const Color(0xFFF8FAFE)
+            : Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: header ? const Radius.circular(7) : Radius.zero,
           topRight: header ? const Radius.circular(7) : Radius.zero,
@@ -504,7 +656,9 @@ class _ReportTable extends StatelessWidget {
                           width: 4,
                           height: 4,
                           decoration: BoxDecoration(
-                              color: labelColor, shape: BoxShape.circle),
+                            color: labelColor,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                         const SizedBox(width: 4),
                       ],
@@ -514,8 +668,9 @@ class _ReportTable extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 6.5,
                             color: labelColor,
-                            fontWeight:
-                                summary ? FontWeight.w700 : FontWeight.w600,
+                            fontWeight: summary
+                                ? FontWeight.w700
+                                : FontWeight.w600,
                           ),
                         ),
                       ),
@@ -526,29 +681,32 @@ class _ReportTable extends StatelessWidget {
           for (final v in [precision, recall, f1])
             Expanded(
               flex: 3,
-              child: Text(header ? v.toString() : _num(v),
-                  textAlign: TextAlign.right,
-                  style: header
-                      ? _headStyle
-                      : TextStyle(
-                          fontSize: 6.5,
-                          color: ink,
-                          fontWeight: summary
-                              ? FontWeight.w700
-                              : FontWeight.w500)),
-            ),
-          // Kolom Support — rata kanan, warna lebih lembut.
-          Expanded(
-            flex: 2,
-            child: Text(header ? support.toString() : _supp(support),
+              child: Text(
+                header ? v.toString() : _num(v),
                 textAlign: TextAlign.right,
                 style: header
                     ? _headStyle
                     : TextStyle(
                         fontSize: 6.5,
-                        color: summary ? ink : muted,
-                        fontWeight:
-                            summary ? FontWeight.w700 : FontWeight.w600)),
+                        color: ink,
+                        fontWeight: summary ? FontWeight.w700 : FontWeight.w500,
+                      ),
+              ),
+            ),
+          // Kolom Support — rata kanan, warna lebih lembut.
+          Expanded(
+            flex: 2,
+            child: Text(
+              header ? support.toString() : _supp(support),
+              textAlign: TextAlign.right,
+              style: header
+                  ? _headStyle
+                  : TextStyle(
+                      fontSize: 6.5,
+                      color: summary ? ink : muted,
+                      fontWeight: summary ? FontWeight.w700 : FontWeight.w600,
+                    ),
+            ),
           ),
         ],
       ),
@@ -573,8 +731,14 @@ class _ReportTable extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Kepala kolom tabel.
-        _row('KELAS', 'PRECISION', 'RECALL', 'F1-SCORE', 'SUPPORT',
-            header: true),
+        _row(
+          'KELAS',
+          'PRECISION',
+          'RECALL',
+          'F1-SCORE',
+          'SUPPORT',
+          header: true,
+        ),
         // Baris tiap kelas — zebra selang-seling.
         for (var i = 0; i < kelas.length; i++)
           _row(
@@ -642,17 +806,24 @@ class _ReportCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(9),
-      decoration:
-          BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               const Expanded(
-                child: Text('Laporan Klasifikasi',
-                    style: TextStyle(
-                        fontSize: 8.5, color: ink, fontWeight: FontWeight.w600)),
+                child: Text(
+                  'Laporan Klasifikasi',
+                  style: TextStyle(
+                    fontSize: 8.5,
+                    color: ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
               TinyBadge(labeled ? 'File unggahan' : 'Tanpa label'),
             ],
@@ -661,10 +832,10 @@ class _ReportCard extends StatelessWidget {
           Text(
             labeled
                 ? 'Precision, Recall, F1-Score, dan Support tiap kelas '
-                    'dihitung dari prediksi model vs label acuan pada file '
-                    'yang Anda unggah.'
+                      'dihitung dari prediksi model vs label acuan pada file '
+                      'yang Anda unggah.'
                 : 'File ini tidak memiliki kolom label — hanya Support '
-                    '(jumlah prediksi tiap kelas) yang bisa ditampilkan.',
+                      '(jumlah prediksi tiap kelas) yang bisa ditampilkan.',
             style: const TextStyle(fontSize: 6, color: muted, height: 1.5),
           ),
           const SizedBox(height: 7),
@@ -673,9 +844,9 @@ class _ReportCard extends StatelessWidget {
           Text(
             labeled
                 ? 'Support = jumlah baris tiap kelas di file unggahan; '
-                    'Accuracy/Macro/Weighted memakai seluruh baris berlabel.'
+                      'Accuracy/Macro/Weighted memakai seluruh baris berlabel.'
                 : 'Unggah file berlabel (mis. kolom Sentiment/label) untuk '
-                    'melihat Precision, Recall, dan F1-Score.',
+                      'melihat Precision, Recall, dan F1-Score.',
             style: const TextStyle(fontSize: 6, color: muted, height: 1.5),
           ),
         ],
@@ -700,15 +871,18 @@ class _SamplesSection extends StatelessWidget {
         children: [
           const SectionHeading('Sampel Klasifikasi Ulasan'),
           const Text(
-              'Tidak ada baris untuk ditampilkan sebagai sampel.',
-              style: TextStyle(fontSize: 6.5, color: muted)),
+            'Tidak ada baris untuk ditampilkan sebagai sampel.',
+            style: TextStyle(fontSize: 6.5, color: muted),
+          ),
         ],
       );
     }
     return Column(
       children: [
-        SectionHeading('Sampel Klasifikasi Ulasan',
-            badge: '${samples.length} baris pertama'),
+        SectionHeading(
+          'Sampel Klasifikasi Ulasan',
+          badge: '${samples.length} baris pertama',
+        ),
         for (var i = 0; i < samples.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
@@ -740,37 +914,68 @@ class _SampleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = item.positive ? const Color(0xFF00A876) : red;
-    final bg = item.positive ? const Color(0xFFE7FBF2) : const Color(0xFFFFE9E9);
+    final bg = item.positive
+        ? const Color(0xFFE7FBF2)
+        : const Color(0xFFFFE9E9);
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(item.id, style: const TextStyle(fontSize: 5.8, color: muted)),
+              Text(
+                item.id,
+                style: const TextStyle(fontSize: 5.8, color: muted),
+              ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-                decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Row(
                   children: [
-                    Icon(item.positive ? Icons.check_circle : Icons.cancel, size: 6, color: color),
+                    Icon(
+                      item.positive ? Icons.check_circle : Icons.cancel,
+                      size: 6,
+                      color: color,
+                    ),
                     const SizedBox(width: 3),
-                    Text(item.positive ? 'Positif' : 'Negatif',
-                        style: TextStyle(fontSize: 5.8, color: color, fontWeight: FontWeight.w600)),
+                    Text(
+                      item.positive ? 'Positif' : 'Negatif',
+                      style: TextStyle(
+                        fontSize: 5.8,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 6),
-          Text(item.text, style: const TextStyle(fontSize: 6.5, height: 1.4, color: Color(0xFF424958))),
+          Text(
+            item.text,
+            style: const TextStyle(
+              fontSize: 6.5,
+              height: 1.4,
+              color: Color(0xFF424958),
+            ),
+          ),
           const SizedBox(height: 7),
           Row(
             children: [
-              Text('Confidence: ${item.confidence}', style: const TextStyle(fontSize: 5.7, color: muted)),
+              Text(
+                'Confidence: ${item.confidence}',
+                style: const TextStyle(fontSize: 5.7, color: muted),
+              ),
               const Spacer(),
               const Icon(Icons.visibility_outlined, size: 8, color: navy),
               const SizedBox(width: 3),
@@ -862,11 +1067,13 @@ class _ExportButtonsState extends State<_ExportButtons> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        backgroundColor: navy,
-        content: Text(msg, style: const TextStyle(fontSize: 9)),
-        behavior: SnackBarBehavior.floating,
-      ));
+      ..showSnackBar(
+        SnackBar(
+          backgroundColor: navy,
+          content: Text(msg, style: const TextStyle(fontSize: 9)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   Future<void> _open(String url, String label, String fallbackName) async {
@@ -892,66 +1099,95 @@ class _ExportButtonsState extends State<_ExportButtons> {
     // Tinggi tombol unduh: 48px di HP agar nyaman disentuh jari.
     final tinggi = hp ? 48.0 : 32.0;
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SectionHeading('Unduh Laporan Hasil',
-              icon: Icons.download_outlined),
-          InkWell(
-            onTap: _busy
-                ? null
-                : () => _open(ApiService.csvUploadReportUrl, 'Hasil CSV',
-                    'hasil_unggahan_klinisia.csv'),
-            child: Container(
-              height: tinggi,
-              decoration: BoxDecoration(color: navy, borderRadius: BorderRadius.circular(8)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_busy)
-                    SizedBox(
-                        width: hp ? 13 : 9,
-                        height: hp ? 13 : 9,
-                        child: const CircularProgressIndicator(
-                            strokeWidth: 1.3, color: Colors.white))
-                  else
-                    Icon(Icons.download_rounded,
-                        size: hp ? 16 : 11, color: Colors.white),
-                  const SizedBox(width: 5),
-                  Text('Unduh Hasil Analisis (CSV)',
-                      style: TextStyle(
-                          fontSize: hp ? 13 : 8,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700)),
-                ],
-              ),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeading(
+          'Unduh Laporan Hasil',
+          icon: Icons.download_outlined,
+        ),
+        InkWell(
+          onTap: _busy
+              ? null
+              : () => _open(
+                  ApiService.csvUploadReportUrl(),
+                  'Hasil CSV',
+                  'hasil_unggahan_klinisia.csv',
+                ),
+          child: Container(
+            height: tinggi,
+            decoration: BoxDecoration(
+              color: navy,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_busy)
+                  SizedBox(
+                    width: hp ? 13 : 9,
+                    height: hp ? 13 : 9,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 1.3,
+                      color: Colors.white,
+                    ),
+                  )
+                else
+                  Icon(
+                    Icons.download_rounded,
+                    size: hp ? 16 : 11,
+                    color: Colors.white,
+                  ),
+                const SizedBox(width: 5),
+                Text(
+                  'Unduh Hasil Analisis (CSV)',
+                  style: TextStyle(
+                    fontSize: hp ? 13 : 8,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 7),
-          InkWell(
-            onTap: _busy
-                ? null
-                : () => _open(ApiService.pdfReportUrl, 'Ringkasan PDF',
-                    'ringkasan_sentimen_klinisia.pdf'),
-            child: Container(
-              height: tinggi,
-              decoration: BoxDecoration(color: Colors.white, border: Border.all(color: line), borderRadius: BorderRadius.circular(8)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.picture_as_pdf_outlined,
-                      size: hp ? 16 : 11, color: red),
-                  const SizedBox(width: 5),
-                  Text('Ekspor Ringkasan PDF',
-                      style: TextStyle(
-                          fontSize: hp ? 13 : 8,
-                          color: const Color(0xFF4B5563),
-                          fontWeight: FontWeight.w600)),
-                ],
-              ),
+        ),
+        const SizedBox(height: 7),
+        InkWell(
+          onTap: _busy
+              ? null
+              : () => _open(
+                  ApiService.pdfReportUrl,
+                  'Ringkasan PDF',
+                  'ringkasan_sentimen_klinisia.pdf',
+                ),
+          child: Container(
+            height: tinggi,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: line),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.picture_as_pdf_outlined,
+                  size: hp ? 16 : 11,
+                  color: red,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'Ekspor Ringkasan PDF',
+                  style: TextStyle(
+                    fontSize: hp ? 13 : 8,
+                    color: const Color(0xFF4B5563),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 }
-

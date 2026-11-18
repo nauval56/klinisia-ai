@@ -6,7 +6,8 @@ import io
 import re
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException
+import pandas as pd
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
 from .. import schemas
@@ -22,6 +23,25 @@ def _safe_filename(name: str | None) -> str:
     base = (name or "laporan_sentimen_klinisia").strip()
     base = re.sub(r"[^\w\-]+", "_", base)
     return (base or "laporan_sentimen_klinisia") + ".csv"
+
+
+def _rows_table(rows: list[dict]) -> dict[str, list]:
+    """Kolom tabel laporan (dipakai CSV & XLSX agar isinya sama persis)."""
+    return {
+        "No": list(range(1, len(rows) + 1)),
+        "Ulasan": [r.get("text", "") for r in rows],
+        "Sentimen": [r.get("label", "") for r in rows],
+        "Confidence (%)": [r.get("confidence_pct", "") for r in rows],
+        "Margin": [r.get("margin", "") for r in rows],
+        "Penjelasan": [r.get("explanation", "") for r in rows],
+    }
+
+
+def _build_xlsx(rows: list[dict]) -> bytes:
+    """Hasil analisis sebagai file Excel (.xlsx) — mengikuti unggahan user."""
+    buf = io.BytesIO()
+    pd.DataFrame(_rows_table(rows)).to_excel(buf, index=False, engine="openpyxl")
+    return buf.getvalue()
 
 
 def _build_csv(rows: list[dict]) -> io.StringIO:
@@ -47,6 +67,18 @@ def _stream(buffer: io.StringIO, filename: str) -> StreamingResponse:
     return StreamingResponse(
         iter([data]),
         media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+def _stream_bytes(data: bytes, filename: str, media_type: str) -> StreamingResponse:
+    """Streaming file biner (mis. .xlsx) sebagai lampiran unduhan."""
+    return StreamingResponse(
+        iter([data]),
+        media_type=media_type,
         headers={
             "Content-Disposition": f'attachment; filename="{filename}"',
             "Access-Control-Expose-Headers": "Content-Disposition",
@@ -89,21 +121,34 @@ def export_history_csv() -> StreamingResponse:
     return _stream(_build_csv(history), f"riwayat_sentimen_{stamp}.csv")
 
 
-@router.get("/csv/upload", summary="Ekspor hasil analisis unggahan CSV terakhir")
-def export_upload_csv() -> StreamingResponse:
-    """Ekspor seluruh baris hasil analisis file CSV yang baru diunggah user.
+@router.get("/csv/upload", summary="Ekspor hasil analisis unggahan terakhir")
+def export_upload_csv(format: str = Query("csv", pattern="^(csv|xlsx)$")) -> StreamingResponse:
+    """Ekspor seluruh baris hasil analisis file yang baru diunggah user.
 
-    Dipakai tombol "Unduh Hasil Analisis (CSV)" di Halaman Ringkasan Dataset.
+    Dipakai tombol "Unduh Hasil Analisis (.CSV/.XLSX)" — format mengikuti
+    file yang diunggah user (xlsx -> file Excel, selain itu -> CSV).
     """
     upload = service.get_last_upload()
     if not upload or not upload.get("results"):
         raise HTTPException(
             status_code=404,
-            detail="Belum ada unggahan CSV. Unggah file lebih dulu (POST /api/analyze/csv).",
+            detail="Belum ada file terunggah. Unggah file lebih dulu (POST /api/analyze/csv).",
         )
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base = re.sub(r"\.csv$", "", str(upload.get("filename") or "hasil_unggahan"), flags=re.I)
-    return _stream(_build_csv(upload["results"]), f"hasil_{base}_{stamp}.csv")
+    base = re.sub(
+        r"\.(csv|xlsx|tsv|xls)$",
+        "",
+        str(upload.get("filename") or "hasil_unggahan"),
+        flags=re.I,
+    )
+    rows = upload["results"]
+    if format == "xlsx":
+        return _stream_bytes(
+            _build_xlsx(rows),
+            f"hasil_{base}_{stamp}.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+    return _stream(_build_csv(rows), f"hasil_{base}_{stamp}.csv")
 
 
 @router.get("/pdf", summary="Unduh ringkasan analisis berformat PDF")

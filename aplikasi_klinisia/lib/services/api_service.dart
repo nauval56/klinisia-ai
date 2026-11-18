@@ -206,9 +206,11 @@ class ApiService {
   /// URL unduhan laporan CSV (riwayat analisis) dari backend.
   static String get csvReportUrl => '$baseUrl/api/report/csv/recent';
 
-  /// URL unduhan hasil analisis file CSV yang baru diunggah user.
-  /// Dipakai tombol "Unduh Hasil Analisis (CSV)" di Halaman Ringkasan Dataset.
-  static String get csvUploadReportUrl => '$baseUrl/api/report/csv/upload';
+  /// URL unduhan hasil analisis file yang baru diunggah user.
+  /// Dipakai tombol "Unduh Hasil Analisis (.CSV/.XLSX)" — format mengikuti
+  /// file yang diunggah user (xlsx -> unduhan Excel, selain itu -> CSV).
+  static String csvUploadReportUrl({String format = 'csv'}) =>
+      '$baseUrl/api/report/csv/upload?format=$format';
 
   /// URL unduhan ringkasan PDF dari backend.
   static String get pdfReportUrl => '$baseUrl/api/report/pdf';

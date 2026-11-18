@@ -282,13 +282,17 @@ async def analyze_csv(
         pairs = [(t, r["label"]) for t, r in zip(truth, results) if t in {"Negatif", "Positif"}]
         if pairs:
             correct = sum(1 for t, p in pairs if t == p)
+            # Sebut format file SESUNGGUHNYA (.csv/.tsv/.xlsx) — jangan
+            # hardcode "CSV" karena user bisa mengunggah Excel.
+            ext = (file.filename or "").rsplit(".", 1)[-1].lower()
+            ext = ext if ext in {"csv", "tsv", "xlsx"} else "csv"
             agreement = {
                 "labeled_rows": len(pairs),
                 "accuracy_vs_label": round(correct / len(pairs), 4),
                 "accuracy_pct": round(correct / len(pairs) * 100, 1),
                 "note": "Label acuan diturunkan dari kolom score (1-3 Negatif, 4-5 Positif)."
                 if score_col
-                else "Label acuan dari kolom label pada CSV.",
+                else f"Label acuan dari kolom label pada file .{ext.upper()}.",
             }
 
     # Laporan klasifikasi khusus file unggahan ini (sinkron dengan file):
