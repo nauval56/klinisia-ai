@@ -1,0 +1,34 @@
+# ---- Flutter / Dart (JANGAN di-push: ratusan MB) ----
+aplikasi_klinisia/build/
+aplikasi_klinisia/.dart_tool/
+**/build/
+.gradle/
+aplikasi_klinisia/.flutter-plugins
+aplikasi_klinisia/.flutter-plugins-dependencies
+aplikasi_klinisia/.packages
+aplikasi_klinisia/*.iml
+aplikasi_klinisia/.idea/
+aplikasi_klinisia/android/.gradle/
+aplikasi_klinisia/android/local.properties
+aplikasi_klinisia/android/app/.cxx/
+aplikasi_klinisia/android/.flutter-plugins*
+aplikasi_klinisia/ios/Pods/
+aplikasi_klinisia/web/favicon.png.bak
+
+# ---- Python / backend ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# ---- Editor & OS ----
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+
+# ---- Rahasia / environment ----
+.env
+.env.*
+!.env.example
