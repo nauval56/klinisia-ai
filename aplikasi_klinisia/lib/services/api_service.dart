@@ -67,27 +67,34 @@ class ApiService {
       rethrow;
     } catch (_) {
       throw ApiException(
-          'Backend Klinisia tidak terjangkau di $baseUrl.\n'
-          'Jalankan backend terlebih dahulu: cd backend && python run.py');
+        'Server analisis tidak terjangkau di $baseUrl.\n'
+        'Periksa koneksi internet Anda lalu coba lagi.',
+      );
     }
     return _jsonOrThrow(res, path);
   }
 
   /// HTTP POST JSON -> JSON object.
   static Future<Map<String, dynamic>> _post(
-      String path, Map<String, dynamic> body) async {
+    String path,
+    Map<String, dynamic> body,
+  ) async {
     final http.Response res;
     try {
       res = await http
-          .post(Uri.parse('$baseUrl$path'),
-              headers: {'Content-Type': 'application/json'}, body: jsonEncode(body))
+          .post(
+            Uri.parse('$baseUrl$path'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
           .timeout(_timeout);
     } on ApiException {
       rethrow;
     } catch (_) {
       throw ApiException(
-          'Backend Klinisia tidak terjangkau di $baseUrl.\n'
-          'Jalankan backend terlebih dahulu: cd backend && python run.py');
+        'Server analisis tidak terjangkau di $baseUrl.\n'
+        'Periksa koneksi internet Anda lalu coba lagi.',
+      );
     }
     return _jsonOrThrow(res, path);
   }
@@ -96,12 +103,11 @@ class ApiService {
     Map<String, dynamic> parsed;
     try {
       final decoded = jsonDecode(_decode(res));
-      parsed = decoded is Map<String, dynamic>
-          ? decoded
-          : {'data': decoded};
+      parsed = decoded is Map<String, dynamic> ? decoded : {'data': decoded};
     } catch (_) {
       throw ApiException(
-          'Respons tidak valid dari $path (status ${res.statusCode}).');
+        'Respons tidak valid dari $path (status ${res.statusCode}).',
+      );
     }
     if (res.statusCode >= 400) {
       final detail = parsed['detail'];
@@ -134,9 +140,10 @@ class ApiService {
       _post('/api/analyze', {'text': text, 'top_k': topK});
 
   /// Analisis banyak ulasan -> {results: [...], summary: {...}}
-  static Future<Map<String, dynamic>> analyzeBatch(List<String> texts,
-          {int topK = 3}) =>
-      _post('/api/analyze/batch', {'texts': texts, 'top_k': topK});
+  static Future<Map<String, dynamic>> analyzeBatch(
+    List<String> texts, {
+    int topK = 3,
+  }) => _post('/api/analyze/batch', {'texts': texts, 'top_k': topK});
 
   /// Analisis file CSV (multipart) ke /api/analyze/csv.
   ///
@@ -155,7 +162,9 @@ class ApiService {
     const csvTimeout = Duration(minutes: 6);
     final uri = Uri.parse('$baseUrl/api/analyze/csv');
     final request = http.MultipartRequest('POST', uri)
-      ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+      ..files.add(
+        http.MultipartFile.fromBytes('file', bytes, filename: filename),
+      );
     if (textColumn != null && textColumn.isNotEmpty) {
       request.fields['text_column'] = textColumn;
     }
@@ -164,17 +173,31 @@ class ApiService {
       final streamed = await request.send().timeout(csvTimeout);
       final body = await streamed.stream.toBytes();
       final res = http.Response.bytes(body, streamed.statusCode);
+
+      // Vercel menolak body > 4,5 MB (413 FUNCTION_PAYLOAD_TOO_LARGE)
+      // dengan respons teks polos — terjemahkan ke pesan yang jelas.
+      if (res.statusCode == 413) {
+        final mb = (bytes.length / (1024 * 1024)).toStringAsFixed(1);
+        throw ApiException(
+          'File berukuran $mb MB melebihi batas unggah server 4,5 MB.\n'
+          'Kurangi jumlah baris atau hapus kolom yang tidak perlu, '
+          'lalu unggah ulang.',
+          413,
+        );
+      }
       return _jsonOrThrow(res, '/api/analyze/csv');
     } on ApiException {
       rethrow;
     } on TimeoutException {
       throw ApiException(
-          'Analisis melebihi batas waktu 6 menit dan dihentikan.\n'
-          'Coba unggah file dengan jumlah baris lebih sedikit.');
+        'Analisis melebihi batas waktu 6 menit dan dihentikan.\n'
+        'Coba unggah file dengan jumlah baris lebih sedikit.',
+      );
     } catch (_) {
       throw ApiException(
-          'Gagal mengunggah CSV ke $baseUrl.\n'
-          'Pastikan backend berjalan: cd backend && python run.py');
+        'Gagal mengunggah file ke server.\n'
+        'Periksa koneksi internet Anda lalu coba lagi.',
+      );
     }
   }
 

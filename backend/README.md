@@ -450,3 +450,6 @@ detik — sama dengan \ANALYSIS_TIME_BUDGET\).
    \\\
 5. \data/\ + \models/\ (±2 MB) ikut ter-bundle — jangan tambahkan file besar
    ke folder itu agar tetap di bawah limit 500 MB.
+#   k l i n i s i a - a i  
+ #   k l i n i s i a - a i  
+ 

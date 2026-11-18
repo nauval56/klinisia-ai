@@ -106,6 +106,48 @@ def _pick_text_column(df: pd.DataFrame, requested: Optional[str]) -> str:
     )
 
 
+def _is_zip(raw: bytes) -> bool:
+    """Deteksi file berbasis ZIP (magic `PK`) — ciri file .xlsx modern."""
+    return raw[:4] == b"PK\x03\x04"
+
+
+def _is_old_xls(raw: bytes) -> bool:
+    """Deteksi format .xls jadul (OLE2 compound file) yang TIDAK didukung."""
+    return raw[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+
+
+def _read_table_smart(raw: bytes, filename: str, requested: Optional[str]) -> pd.DataFrame:
+    """Baca file unggahan: CSV (auto-separator) ATAU Excel .xlsx.
+
+    .xlsx dibaca lewat `pd.read_excel` (dependensi openpyxl). Format .xls
+    jadul ditolak dengan pesan jelas agar user menyimpan ulang ke .xlsx/.csv.
+    """
+    name = (filename or "").lower()
+    if _is_old_xls(raw) and not name.endswith(".csv"):
+        raise HTTPException(
+            status_code=400,
+            detail="Format .xls (Excel lama) tidak didukung. "
+            "Buka file lalu 'Save As' -> pilih .xlsx atau .csv, lalu unggah ulang.",
+        )
+    if name.endswith((".xlsx", ".xlsm")) or (_is_zip(raw) and not name.endswith(".csv")):
+        try:
+            df = pd.read_excel(io.BytesIO(raw), engine="openpyxl")
+        except ImportError as exc:  # pragma: no cover - openpyxl wajib di requirements
+            raise HTTPException(
+                status_code=400,
+                detail="Dukungan file Excel (openpyxl) belum terpasang di server.",
+            ) from exc
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Gagal membaca file Excel: {exc}",
+            ) from exc
+        if df.empty:
+            raise HTTPException(status_code=400, detail="File Excel tidak berisi baris data.")
+        return df
+    return _read_csv_smart(raw, requested)
+
+
 def _read_csv_smart(raw: bytes, requested: Optional[str]) -> pd.DataFrame:
     """Baca CSV unggahan dengan deteksi pemisah yang lebih stabil.
 
@@ -114,7 +156,7 @@ def _read_csv_smart(raw: bytes, requested: Optional[str]) -> pd.DataFrame:
     Strategi: coba deteksi otomatis dulu; bila kolom teks tidak bisa
     dipilih dari hasilnya, ulangi dengan pemisah koma lalu titik-koma.
     """
-    attempts = (None, ",", ";")
+    attempts = (None, ",", ";", "\t")
     frames: list[pd.DataFrame] = []
     for sep in attempts:
         try:
@@ -154,9 +196,9 @@ async def analyze_csv(
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="File kosong.")
-    df = _read_csv_smart(raw, text_column)
+    df = _read_table_smart(raw, file.filename or "", text_column)
     if df.empty:
-        raise HTTPException(status_code=400, detail="CSV tidak berisi baris data.")
+        raise HTTPException(status_code=400, detail="File tidak berisi baris data.")
 
     col = _pick_text_column(df, text_column)
     # Analisis mengikuti jumlah data yang diunggah user (tanpa dipotong):

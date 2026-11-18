@@ -297,6 +297,14 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
 
   /// Pilih file dataset (Kondisi 3): HANYA menyimpan lampiran.
   /// Analisis dijalankan saat user menekan tombol kirim `↑`.
+  ///
+  /// `FileType.any` dipakai agar file dari Google Drive/storage eksternal
+  /// tetap bisa DIPILIH (filter MIME bawaan Android sering membuat file
+  /// .csv/.xlsx dari Drive tidak bisa ditekan). Validasi ekstensi &
+  /// ukuran dilakukan manual di sini dengan pesan yang jelas.
+  static const List<String> _formatDataset = ['csv', 'tsv', 'xlsx'];
+  static const int _maksUnggahanBytes = 4400 * 1024; // batas Vercel 4,5 MB
+
   Future<void> _pilihFile() async {
     if (_busyPilihFile) return;
     setState(() {
@@ -305,12 +313,34 @@ class _KlinisiaHomePageState extends State<KlinisiaHomePage>
     });
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['csv', 'xlsx'],
+        type: FileType.any, // jangan filter MIME — semua file terlihat
         withData: true,
       );
       if (result == null || result.files.isEmpty) return;
       final file = result.files.first;
+
+      final ekstensi = file.name.contains('.')
+          ? file.name.split('.').last.toLowerCase()
+          : '';
+      if (!_formatDataset.contains(ekstensi)) {
+        setState(
+          () => _error =
+              'File "${file.name}" tidak didukung.\n'
+              'Format yang bisa dianalisis: .CSV, .TSV, dan .XLSX.',
+        );
+        return;
+      }
+      if (file.bytes != null && file.bytes!.length > _maksUnggahanBytes) {
+        final mb = (file.bytes!.length / (1024 * 1024)).toStringAsFixed(1);
+        setState(
+          () => _error =
+              'File "${file.name}" berukuran $mb MB — melebihi batas '
+              'unggah 4,5 MB.\n'
+              'Kurangi jumlah baris atau hapus kolom yang tidak perlu, '
+              'lalu unggah ulang.',
+        );
+        return;
+      }
       if (file.bytes == null) {
         setState(
           () => _error = 'File "${file.name}" tidak terbaca. Coba pilih ulang.',
